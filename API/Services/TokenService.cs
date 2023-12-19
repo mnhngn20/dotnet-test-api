@@ -5,22 +5,27 @@ using API.Entities;
 using API.Interfaces;
 using Microsoft.IdentityModel.Tokens;
 
-namespace API.Services {
-  public class TokenService :ITokenService {
+namespace API.Services
+{
+  public class TokenService : ITokenService
+  {
     private readonly SymmetricSecurityKey _key;
 
-    public TokenService(IConfiguration config) {
+    public TokenService(IConfiguration config)
+    {
       _key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["TokenKey"]));
     }
-    
-    public string CreateToken(User user) {
+
+    public string CreateToken(User user)
+    {
       var claims = new List<Claim>{
         new Claim(JwtRegisteredClaimNames.NameId, user.UserName)
       };
 
-      var credentials = new SigningCredentials(_key, SecurityAlgorithms.HmacSha256Signature );
+      var credentials = new SigningCredentials(_key, SecurityAlgorithms.HmacSha256Signature);
 
-      var tokenDescriptor = new SecurityTokenDescriptor{
+      var tokenDescriptor = new SecurityTokenDescriptor
+      {
         Subject = new ClaimsIdentity(claims),
         Expires = DateTime.Now.AddDays(7),
         SigningCredentials = credentials,
