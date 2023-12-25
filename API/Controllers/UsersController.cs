@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using API.DTOs;
 using API.Entities;
 using API.Helpers;
@@ -20,7 +21,7 @@ public class UsersController : BaseAPIController
   }
 
   [Authorize]
-  [HttpGet] // api/users
+  [HttpGet] // GET api/users
   public async Task<ActionResult<IEnumerable<MemberDto>>> GetUsers()
   {
     var users = await _userRepository.GetMembersAsync();
@@ -30,7 +31,7 @@ public class UsersController : BaseAPIController
     return Ok(usersToReturn);
   }
 
-  [HttpGet("{id}")] // api/users/:id
+  [HttpGet("{id}")] // GET api/users/:id
   public async Task<ActionResult<MemberDto>> GetUser(int id)
   {
     var user = await _userRepository.GetUserByIdAsync(id);
@@ -38,5 +39,26 @@ public class UsersController : BaseAPIController
     var userToReturn = _mapper.Map<MemberDto>(user);
 
     return userToReturn;
+  }
+
+  [HttpPut()] // PUT api/users
+  public async Task<ActionResult<MemberDto>> UpdateUser(MemberUpdateDto memberUpdateDto)
+  {
+    var username = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    var user = await _userRepository.GetUserByUserNameAsync(username);
+
+    if (user == null)
+    {
+      return NotFound();
+    }
+
+    _mapper.Map(memberUpdateDto, user);
+
+    if (await _userRepository.SaveAllAsync())
+    {
+      return NoContent();
+    }
+
+    return BadRequest("Fail to update user");
   }
 }
